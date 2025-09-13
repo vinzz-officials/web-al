@@ -4,17 +4,20 @@ const ADMIN_USER = process.env.ADMIN_USER || "cpanel";
 const ADMIN_PASS = process.env.ADMIN_PASS || "web dev";
 const JWT_SECRET = process.env.JWT_SECRET || "please-change-me";
 
+async function parseBody(req) {
+  const chunks = [];
+  for await (const chunk of req) chunks.push(chunk);
+  return JSON.parse(Buffer.concat(chunks).toString() || "{}");
+}
+
 module.exports = async (req, res) => {
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  // --- Manual parse body (Vercel) ---
   let body = {};
   try {
-    const chunks = [];
-    for await (const chunk of req) chunks.push(chunk);
-    body = JSON.parse(Buffer.concat(chunks).toString() || "{}");
+    body = await parseBody(req);
   } catch {
     return res.status(400).json({ message: "Invalid JSON" });
   }
