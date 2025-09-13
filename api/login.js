@@ -9,13 +9,13 @@ module.exports = async (req, res) => {
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  // --- Manual parse body (wajib di Vercel) ---
+  // --- Manual parse body (Vercel) ---
   let body = {};
   try {
     const chunks = [];
     for await (const chunk of req) chunks.push(chunk);
     body = JSON.parse(Buffer.concat(chunks).toString() || "{}");
-  } catch (err) {
+  } catch {
     return res.status(400).json({ message: "Invalid JSON" });
   }
 
@@ -24,7 +24,6 @@ module.exports = async (req, res) => {
     return res.status(400).json({ message: "Missing credentials" });
   }
 
-  // --- Validasi user ---
   if (username === ADMIN_USER && password === ADMIN_PASS) {
     const token = jwt.sign({ sub: username, role: "admin" }, JWT_SECRET, {
       expiresIn: "2h",
