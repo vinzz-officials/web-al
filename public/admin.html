@@ -1,0 +1,137 @@
+<!-- public/admin.html -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Panel — ALvian</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+  <style>body{font-family:Poppins, sans-serif}</style>
+</head>
+<body class="bg-gray-900 text-gray-100 p-6">
+  <div class="max-w-3xl mx-auto">
+    <h1 class="text-3xl font-bold text-cyan-400 mb-6">Admin Panel</h1>
+
+    <!-- LOGIN -->
+    <div id="loginCard" class="bg-gray-800 p-6 rounded-lg shadow mb-6">
+      <h2 class="text-lg font-semibold mb-3">Login Admin</h2>
+      <input id="u" placeholder="username" class="w-full p-2 mb-2 rounded bg-gray-700" />
+      <input id="p" placeholder="password" type="password" class="w-full p-2 mb-3 rounded bg-gray-700" />
+      <button id="btnLogin" class="px-4 py-2 bg-cyan-400 text-gray-900 rounded">Login</button>
+      <div id="loginMsg" class="mt-3 text-sm text-red-400"></div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="panel" class="hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold">User Aktif</h2>
+        <div>
+          <button id="btnRefresh" class="px-3 py-1 bg-gray-700 rounded mr-2">Refresh</button>
+          <button id="btnLogout" class="px-3 py-1 bg-red-600 rounded">Logout</button>
+        </div>
+      </div>
+      <ul id="userList" class="space-y-2 mb-6"></ul>
+
+      <div class="bg-gray-800 p-4 rounded">
+        <h3 class="font-semibold mb-2">Run Command (whitelisted)</h3>
+        <select id="cmdSelect" class="p-2 rounded bg-gray-700">
+          <option value="">-- pilih command --</option>
+          <option value="ping">ping (sim)</option>
+          <option value="clearUsers">clearUsers (hapus active users)</option>
+        </select>
+        <button id="runCmd" class="ml-3 px-3 py-1 bg-green-500 rounded">Run</button>
+        <pre id="cmdOut" class="mt-3 p-3 bg-gray-900 rounded text-sm"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    AOS?.init?.();
+
+    const setToken = (t) => { localStorage.setItem('ALV_TOKEN', t); };
+    const getToken = () => localStorage.getItem('ALV_TOKEN');
+    const clearToken = () => localStorage.removeItem('ALV_TOKEN');
+
+    async function api(path, opts = {}) {
+      opts.headers = opts.headers || {};
+      if (getToken()) opts.headers['Authorization'] = 'Bearer ' + getToken();
+      opts.headers['Content-Type'] = 'application/json';
+      const res = await fetch('/api/' + path, opts);
+      if (res.status === 401 || res.status === 403) throw new Error('Unauthorized');
+      return res.json();
+    }
+
+    // login
+    document.getElementById('btnLogin').onclick = async () => {
+      const u = document.getElementById('u').value;
+      const p = document.getElementById('p').value;
+      try {
+        const r = await fetch('/api/login', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ username: u, password: p })
+        });
+        const j = await r.json();
+        if (!r.ok) { document.getElementById('loginMsg').textContent = j.message || 'Login failed'; return; }
+        setToken(j.token);
+        document.getElementById('loginCard').classList.add('hidden');
+        document.getElementById('panel').classList.remove('hidden');
+        loadUsers();
+      } catch (e) {
+        document.getElementById('loginMsg').textContent = e.message;
+      }
+    };
+
+    document.getElementById('btnLogout').onclick = () => {
+      clearToken();
+      document.getElementById('panel').classList.add('hidden');
+      document.getElementById('loginCard').classList.remove('hidden');
+    };
+
+    async function loadUsers() {
+      try {
+        const j = await api('active-users', { method: 'GET' });
+        const list = document.getElementById('userList');
+        list.innerHTML = '';
+        j.activeUsers.forEach(u => {
+          const li = document.createElement('li');
+          li.className = 'p-2 bg-gray-800 rounded';
+          li.textContent = u;
+          list.appendChild(li);
+        });
+      } catch (e) {
+        if (e.message === 'Unauthorized') {
+          clearToken();
+          document.getElementById('panel').classList.add('hidden');
+          document.getElementById('loginCard').classList.remove('hidden');
+        } else {
+          console.error(e);
+        }
+      }
+    }
+
+    document.getElementById('btnRefresh').onclick = loadUsers;
+
+    document.getElementById('runCmd').onclick = async () => {
+      const cmd = document.getElementById('cmdSelect').value;
+      if (!cmd) return alert('Pilih command dulu');
+      document.getElementById('cmdOut').textContent = 'Running...';
+      try {
+        const j = await api('command', { method: 'POST', body: JSON.stringify({ cmd }) });
+        document.getElementById('cmdOut').textContent = j.output || JSON.stringify(j);
+        loadUsers(); // refresh after command (e.g. clearUsers)
+      } catch (e) {
+        document.getElementById('cmdOut').textContent = e.message;
+      }
+    };
+
+    // if token exists, auto-show panel
+    if (getToken()) {
+      document.getElementById('loginCard').classList.add('hidden');
+      document.getElementById('panel').classList.remove('hidden');
+      loadUsers();
+    }
+  </script>
+</body>
+  </html>
