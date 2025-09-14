@@ -99,17 +99,16 @@
   <footer class="py-6 text-center bg-gray-950 text-gray-500">
     <p>&copy; Hanya Seorang Pemula 🦅</p>
   </footer>
-  <script>
-  // simple stable id per tab
-  const userId = localStorage.getItem('ALV_UID') || ('u_' + Math.random().toString(36).slice(2,10));
-  localStorage.setItem('ALV_UID', userId);
-
-  // call track API (no auth required)
-  fetch('/api/track', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ userId })
-  }).catch(()=>{});
+<script>
+  async function trackUser() {
+    try {
+      await fetch('/api/track', { method: 'POST' });
+    } catch (e) {
+      console.error('Track failed', e);
+    }
+  }
+  setInterval(trackUser, 10000); // ping tiap 10 detik
+  trackUser(); // langsung ping sekali waktu load
 </script>
   <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
   <script>
