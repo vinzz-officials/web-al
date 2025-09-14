@@ -116,31 +116,6 @@
     try {
       await fetch('/api/users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
-        body: JSON.stringify({ userId: getUserId() }) // ← penting!
-      });
-    } catch (e) {
-      console.error('Track failed', e);
-    }
-  }
-
-  trackUser();                 // ping pertama saat load
-  setInterval(trackUser, 10000); // ping tiap 10 detik
-</script>
-  <script>
-  function getUserId() {
-    let id = localStorage.getItem('userId');
-    if (!id) {
-      id = 'user-' + Math.random().toString(36).substr(2, 9);
-      localStorage.setItem('userId', id);
-    }
-    return id;
-  }
-
-  async function trackUser() {
-    try {
-      await fetch('/api/users', {
-        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: getUserId() })
       });
@@ -176,7 +151,7 @@
   trackUser();
   setInterval(trackUser, 10000);   // update status user
   setInterval(pollCommands, 5000); // cek command tiap 5 detik
-        </script>
+    </script>
   <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
   <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
   <script>
