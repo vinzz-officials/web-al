@@ -131,11 +131,7 @@
           if (cmd.type === 'alert') {
             alert(cmd.message);
           } else if (cmd.type === 'block') {
-            document.body.innerHTML = `
-              <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:black;color:red;font-size:2rem;">
-                Access Blocked
-              </div>
-            `;
+  window.location.href = "blocked.html";
           }
         });
       }
