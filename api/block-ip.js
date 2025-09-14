@@ -1,4 +1,4 @@
-import { addBlocked, removeBlocked, getBlocked } from "../../blocked-ips.js"; // path relatif dari api route
+import { addBlocked, removeBlocked, getBlocked } from "../blocked-ips.js"; // path relatif dari api route
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
