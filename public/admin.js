@@ -3,7 +3,7 @@ let selectedUser = null;
 
 async function fetchUsers() {
   try {
-    const res = await fetch('/api/active-users', { credentials: 'same-origin' });
+    const res = await fetch('/api/users', { credentials: 'same-origin' });
     if (!res.ok) {
       console.error('Gagal ambil data user', res.status);
       return;
