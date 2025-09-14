@@ -21,14 +21,12 @@ function parseCookies(cookieHeader) {
 }
 
 function verifyAdmin(req) {
-  // Accept either a Bearer JWT or the adminToken cookie used by the simple login form.
   const auth = (req.headers && req.headers.authorization) || '';
-  if (auth.startsWith('Bearer ')) {
-    // we can't rely on JWT configuration here — allow for Bearer for compatibility (could validate JWT in a real setup)
-    return true;
-  }
+  if (auth.startsWith('Bearer ')) return true;
+
   const cookies = parseCookies(req.headers && req.headers.cookie || '');
   if (cookies.adminToken && cookies.adminToken === 'Control Web by Vinzz') return true;
+
   return false;
 }
 
@@ -39,10 +37,24 @@ export default async function handler(req, res) {
 
   const body = await parseBody(req);
   const { ip, action } = body || {};
-  if (!ip || !action) return res.status(400).json({ error: 'Missing parameters' });
 
-  if (action === 'add') addBlocked(ip);
-  if (action === 'remove') removeBlocked(ip);
+  if (!action) {
+    return res.status(400).json({ error: 'Missing action' });
+  }
+
+  if (action === 'add') {
+    if (!ip) return res.status(400).json({ error: 'Missing IP' });
+    addBlocked(ip);
+  }
+
+  if (action === 'remove') {
+    if (!ip) return res.status(400).json({ error: 'Missing IP' });
+    removeBlocked(ip);
+  }
+
+  if (action === 'list') {
+    return res.status(200).json({ success: true, blocked: getBlocked() });
+  }
 
   return res.status(200).json({ success: true, blocked: getBlocked() });
 }
