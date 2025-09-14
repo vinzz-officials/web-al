@@ -100,15 +100,29 @@
     <p>&copy; Hanya Seorang Pemula 🦅</p>
   </footer>
 <script>
+  function getUserId() {
+    let id = localStorage.getItem('userId');
+    if (!id) {
+      id = 'user-' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('userId', id);
+    }
+    return id;
+  }
+
   async function trackUser() {
     try {
-      await fetch('/api/track', { method: 'POST' });
+      await fetch('/api/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
+        body: JSON.stringify({ userId: getUserId() }) // ← penting!
+      });
     } catch (e) {
       console.error('Track failed', e);
     }
   }
+
+  trackUser();                 // ping pertama saat load
   setInterval(trackUser, 10000); // ping tiap 10 detik
-  trackUser(); // langsung ping sekali waktu load
 </script>
   <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
   <script>
