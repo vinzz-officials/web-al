@@ -37,10 +37,10 @@ async function sendAlert(id) {
 
 async function blockIP(ip) {
   if (!confirm(`Block IP ${ip}?`)) return;
-  await fetch("/api/block", {
+  await fetch("/api/block-ip", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ip })
+    body: JSON.stringify({ ip, action: "add" })
   });
   fetchUsers();
 }
