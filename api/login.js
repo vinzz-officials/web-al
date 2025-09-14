@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     res.setHeader(
       "Set-Cookie",
       cookie.serialize("adminToken", "Control Web by Vinzz", {
-        httpOnly: true,
+        httpOnly: false,
         secure: process.env.NODE_ENV === "production",
         maxAge: 60 * 60 * 24, // 1 hari
         path: "/",
