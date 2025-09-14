@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="/admin.css">
+</head>
+<body>
+  <header class="hdr">
+    <h1>Admin Panel</h1>
+    <div class="hdr-actions">
+      <button id="refreshBtn">Refresh</button>
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="controls">
+      <div class="block-ip">
+        <label>Block / Unblock custom IP</label>
+        <input id="customIp" placeholder="e.g. 203.0.113.5" />
+        <button id="blockIpBtn" class="block-btn">Block IP</button>
+        <button id="unblockIpBtn" class="unblock-btn">Unblock IP</button>
+      </div>
+      <div class="blocked-list">
+        <label>Blocked IPs</label>
+        <ul id="blockedList"></ul>
+      </div>
+    </section>
+
+    <section class="users">
+      <table id="userTable">
+        <thead>
+          <tr><th>Status</th><th>ID</th><th>IP</th><th>Actions</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section class="alert-panel">
+      <h3>Send Alert</h3>
+      <p>Selected user: <span id="selectedUser">none</span></p>
+      <textarea id="alertMsg" placeholder="Message to user (ID only)"></textarea>
+      <div class="actions">
+        <button id="sendAlertBtn" class="alert-btn">Send Alert</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="/admin.js"></script>
+  <script>
+    // simple session check (login sets cookie "adminToken")
+    const token = document.cookie.split('; ').find(r => r.startsWith('adminToken='));
+    if (!token) {
+      alert("Session tidak ditemukan. Silakan login ulang.");
+      window.location.href = "/login.html";
+    }
+  </script>
+</body>
+</html>
