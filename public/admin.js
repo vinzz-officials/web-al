@@ -69,24 +69,59 @@ function highlightSelected() {
 }
 
 async function blockIp(ip) {
-  await fetch('/api/block-ip', {
-    method: 'POST',
-    credentials: 'same-origin',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ip, action: 'add' })
-  });
-  await fetchBlocked();
+  try {
+    const res = await fetch('/api/block-ip', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ip, action: 'add' })
+    });
+
+    if (!res.ok) {
+      const txt = await res.text();
+      console.error("Gagal block IP:", res.status, txt);
+      alert("❌ Gagal block user: " + ip);
+      return;
+    }
+
+    const data = await res.json();
+    console.log("✅ User berhasil di-block:", ip, data);
+    alert("✅ User berhasil di-block: " + ip);
+
+    await fetchBlocked();
+  } catch (err) {
+    console.error("Error blockIp:", err);
+    alert("❌ Error blockIp: " + err.message);
+  }
 }
 
 async function unblockIp(ip) {
-  await fetch('/api/block-ip', {
-    method: 'POST',
-    credentials: 'same-origin',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ip, action: 'remove' })
-  });
-  await fetchBlocked();
+  try {
+    const res = await fetch('/api/block-ip', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ip, action: 'remove' })
+    });
+
+    if (!res.ok) {
+      const txt = await res.text();
+      console.error("Gagal unblock IP:", res.status, txt);
+      alert("❌ Gagal unblock user: " + ip);
+      return;
+    }
+
+    const data = await res.json();
+    console.log("✅ User berhasil di-unblock:", ip, data);
+    alert("✅ User berhasil di-unblock: " + ip);
+
+    await fetchBlocked();
+  } catch (err) {
+    console.error("Error unblockIp:", err);
+    alert("❌ Error unblockIp: " + err.message);
+  }
 }
+
 
 async function fetchBlocked() {
   try {
