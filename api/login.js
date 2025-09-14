@@ -1,38 +1,22 @@
-const jwt = require("jsonwebtoken");
+import cookie from "cookie";
 
-const ADMIN_USER = process.env.ADMIN_USER || "cpanel";
-const ADMIN_PASS = process.env.ADMIN_PASS || "web dev";
-const JWT_SECRET = process.env.JWT_SECRET || "please-change-me";
+export default async function handler(req, res) {
+  if (req.method !== "POST") return res.status(405).end();
 
-async function parseBody(req) {
-  const chunks = [];
-  for await (const chunk of req) chunks.push(chunk);
-  return JSON.parse(Buffer.concat(chunks).toString() || "{}");
+  const { password } = req.body;
+
+  if (password === "Control Web by Vinzz") {
+    res.setHeader(
+      "Set-Cookie",
+      cookie.serialize("adminToken", "Control Web by Vinzz", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 60 * 60 * 24,
+        path: "/",
+      })
+    );
+    return res.status(200).json({ success: true });
+  }
+
+  res.status(401).json({ error: "Password salah" });
 }
-
-module.exports = async (req, res) => {
-  if (req.method !== "POST") {
-    return res.status(405).json({ message: "Method not allowed" });
-  }
-
-  let body = {};
-  try {
-    body = await parseBody(req);
-  } catch {
-    return res.status(400).json({ message: "Invalid JSON" });
-  }
-
-  const { username, password } = body;
-  if (!username || !password) {
-    return res.status(400).json({ message: "Missing credentials" });
-  }
-
-  if (username === ADMIN_USER && password === ADMIN_PASS) {
-    const token = jwt.sign({ sub: username, role: "admin" }, JWT_SECRET, {
-      expiresIn: "2h",
-    });
-    return res.status(200).json({ success: true, token });
-  }
-
-  return res.status(401).json({ success: false, message: "Invalid credentials" });
-};
