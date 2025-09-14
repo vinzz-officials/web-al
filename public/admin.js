@@ -139,12 +139,14 @@ document.getElementById('sendAlertBtn').addEventListener('click', async ()=>{
   const msg = document.getElementById('alertMsg').value.trim();
   if (!selectedUser) return alert('Pilih user aktif dulu (klik baris user)');
   if (!msg) return alert('Tulis pesan alert');
+
   const res = await fetch('/api/command', {
     method: 'POST',
     credentials: 'same-origin',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId: selectedUser, type: 'alert', payload: { message: msg } })
+    body: JSON.stringify({ targetId: selectedUser, type: 'alert', message: msg })
   });
+
   if (res.ok) {
     alert('Alert dikirim ke ' + selectedUser);
     document.getElementById('alertMsg').value = '';
