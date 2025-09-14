@@ -1,28 +1,22 @@
-// Example middleware for Express-like frameworks to block IPs.
-// Usage (Express):
-// const { blockMiddleware } = require('./api/middleware');
-// app.use(blockMiddleware);
+import { NextResponse } from 'next/server'
 
-const fs = require("fs");
-const path = require("path");
-const blockedFile = path.join(__dirname, "..", "blocked_ips.json");
+export function middleware(req) {
+  const ip = (
+    req.headers.get('x-forwarded-for') ||
+    req.ip ||
+    ''
+  ).split(',')[0].trim()
 
-function readBlocked(){
-  try {
-    return JSON.parse(fs.readFileSync(blockedFile,'utf-8')).blocked || [];
-  } catch { return []; }
-}
+  // ambil daftar ip yang diblok
+  const blocked = global.__BLOCKED_IPS || []
 
-function blockMiddleware(req, res, next) {
-  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || "";
-  const blocked = readBlocked();
   if (blocked.includes(ip)) {
-    res.statusCode = 403;
-    res.end("Forbidden");
-    return;
+    return NextResponse.redirect(new URL('/blocked.html', req.url))
   }
-  if (typeof next === "function") return next();
-  return;
+
+  return NextResponse.next()
 }
 
-module.exports = { blockMiddleware };
+export const config = {
+  matcher: '/:path*',
+}
