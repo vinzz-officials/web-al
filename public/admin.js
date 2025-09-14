@@ -18,6 +18,7 @@ function renderTable(users) {
       <td>
         <button class="action-btn alert-btn" onclick="sendAlert('${u.id}')">Alert</button>
         <button class="action-btn block-btn" onclick="blockIP('${u.ip}')">Block</button>
+        <button class="action-btn unblock-btn" onclick="unblockIP('${u.ip}')">Unblock</button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -45,8 +46,18 @@ async function blockIP(ip) {
   fetchUsers();
 }
 
+async function unblockIP(ip) {
+  if (!confirm(`Unblock IP ${ip}?`)) return;
+  await fetch("/api/block-ip", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ip, action: "remove" })
+  });
+  fetchUsers();
+}
+
 document.getElementById("logoutBtn").addEventListener("click", async () => {
-  await fetch("/api/logout");
+  await fetch("/api/logout", { method: "POST" });
   window.location.href = "/login.html";
 });
 
