@@ -5,6 +5,7 @@
     "dev": "vercel dev"
   },
   "dependencies": {
-    "jsonwebtoken": "^9.0.0"
+    "jsonwebtoken": "^9.0.0",
+    "cookie": "^0.6.0" // ⬅️ Tambahin ini
   }
 }
