@@ -1,4 +1,4 @@
-import { addBlocked, removeBlocked, getBlocked } from "../../blocked-ips";
+import { addBlocked, removeBlocked, getBlocked } from "../public/blocked-ips";
 
 export default async function handler(req, res) {
   const { ip, action } = req.body;
