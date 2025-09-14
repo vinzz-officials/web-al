@@ -31,5 +31,19 @@
   </main>
 
   <script src="/admin.js"></script>
+  <script>
+async function checkAdmin() {
+  try {
+    const res = await fetch("/api/check-admin"); // bikin endpoint khusus
+    if (res.status === 401) {
+      window.location.href = "/login";
+    }
+  } catch (e) {
+    console.error("Gagal cek admin", e);
+    window.location.href = "/login";
+  }
+}
+checkAdmin();
+  </script>
 </body>
 </html>
