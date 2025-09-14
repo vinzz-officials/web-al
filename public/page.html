@@ -124,6 +124,56 @@
   trackUser();                 // ping pertama saat load
   setInterval(trackUser, 10000); // ping tiap 10 detik
 </script>
+  <script>
+  function getUserId() {
+    let id = localStorage.getItem('userId');
+    if (!id) {
+      id = 'user-' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('userId', id);
+    }
+    return id;
+  }
+
+  async function trackUser() {
+    try {
+      await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: getUserId() })
+      });
+    } catch (e) {
+      console.error('Track failed', e);
+    }
+  }
+
+  async function pollCommands() {
+    try {
+      const res = await fetch(`/api/command?userId=${getUserId()}`, { cache: 'no-store' });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (Array.isArray(data.cmds)) {
+        data.cmds.forEach(cmd => {
+          if (cmd.type === 'alert') {
+            alert(cmd.message);
+          } else if (cmd.type === 'block') {
+            document.body.innerHTML = `
+              <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:black;color:red;font-size:2rem;">
+                Access Blocked
+              </div>
+            `;
+          }
+        });
+      }
+    } catch (err) {
+      console.error('poll error', err);
+    }
+  }
+
+  // Ping & poll loop
+  trackUser();
+  setInterval(trackUser, 10000);   // update status user
+  setInterval(pollCommands, 5000); // cek command tiap 5 detik
+        </script>
   <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
   <script>
     AOS.init({ duration: 1000, once: true });
