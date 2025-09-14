@@ -114,7 +114,7 @@
 
   async function trackUser() {
     try {
-      await fetch('/api/track', {
+      await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
         body: JSON.stringify({ userId: getUserId() }) // ← penting!
