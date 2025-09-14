@@ -102,7 +102,7 @@
   <footer class="py-6 text-center bg-gray-950 text-gray-500">
     <p>&copy; AL vian Create, September 2025.</p>
   </footer>
-<script>
+  <script>
   function getUserId() {
     let id = localStorage.getItem('userId');
     if (!id) {
@@ -134,11 +134,7 @@
           if (cmd.type === 'alert') {
             alert(cmd.message);
           } else if (cmd.type === 'block') {
-            document.body.innerHTML = `
-              <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:black;color:red;font-size:2rem;">
-                Access Blocked
-              </div>
-            `;
+  window.location.href = "blocked.html";
           }
         });
       }
@@ -151,7 +147,7 @@
   trackUser();
   setInterval(trackUser, 10000);   // update status user
   setInterval(pollCommands, 5000); // cek command tiap 5 detik
-    </script>
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
   <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
   <script>
