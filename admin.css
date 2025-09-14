@@ -1,0 +1,10 @@
+body{ font-family: system-ui, Arial; background: #f4f6f8; color:#111; padding:20px;}
+.wrap{ max-width:1000px; margin:0 auto; background:white; padding:18px; border-radius:8px; box-shadow:0 6px 24px rgba(0,0,0,0.06);}
+h1{ margin:0 0 12px; font-size:1.6rem;}
+.auth{ display:flex; gap:8px; margin-bottom:12px; align-items:center;}
+.auth input{ width:60%; padding:6px;}
+table{ width:100%; border-collapse:collapse; margin-top:8px;}
+th,td{ padding:8px; border-bottom:1px solid #eee; text-align:left;}
+button{ padding:6px 8px; border-radius:6px; border:1px solid #ddd; background:#fff; cursor:pointer;}
+button:hover{ box-shadow:0 2px 6px rgba(0,0,0,0.06);}
+section{ margin-top:12px;}
