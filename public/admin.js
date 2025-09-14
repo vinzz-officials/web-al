@@ -144,7 +144,7 @@ document.getElementById('sendAlertBtn').addEventListener('click', async ()=>{
     method: 'POST',
     credentials: 'same-origin',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ targetId: selectedUser, type: 'alert', message: msg })
+    body: JSON.stringify({ targetId: selectedUser, type: 'alert', message: msg }) // ← sinkron sama API
   });
 
   if (res.ok) {
