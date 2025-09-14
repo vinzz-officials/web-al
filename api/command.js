@@ -1,0 +1,51 @@
+const jwt = require("jsonwebtoken");
+const fs = require("fs");
+const JWT_SECRET = process.env.JWT_SECRET || "please-change-me";
+let activeUsers = global.__ACTIVE_USERS = global.__ACTIVE_USERS || {};
+
+function parseCookies(cookieHeader) {
+  const out = {};
+  if (!cookieHeader) return out;
+  for (const part of cookieHeader.split(';')) {
+    const idx = part.indexOf('=');
+    if (idx === -1) continue;
+    const key = part.slice(0, idx).trim();
+    const val = decodeURIComponent(part.slice(idx+1).trim());
+    out[key] = val;
+  }
+  return out;
+}
+
+function verifyAdmin(req) {
+  const auth = (req.headers && req.headers.authorization) || "";
+  if (auth.startsWith("Bearer ")) {
+    try {
+      const token = auth.split(" ")[1];
+      const p = jwt.verify(token, JWT_SECRET);
+      return p && p.role === "admin";
+    } catch { /* ignore */ }
+  }
+  // fallback: accept adminToken cookie from the provided simple login flow
+  const cookies = parseCookies(req.headers && req.headers.cookie || "");
+  if (cookies.adminToken && cookies.adminToken === "Control Web by Vinzz") return true;
+  return false;
+}
+
+async function parseBody(req){
+  const chunks = [];
+  for await (const c of req) chunks.push(c);
+  try { return JSON.parse(Buffer.concat(chunks).toString() || "{}"); } catch { return {}; }
+}
+
+module.exports = async (req, res) => {
+  // POST { userId, type: "alert"|"custom", payload: {...} }
+  if (req.method !== "POST") return res.status(405).json({ message: "Method not allowed" });
+  if (!verifyAdmin(req)) return res.status(401).json({ message: "Unauthorized" });
+  const body = await parseBody(req);
+  const { userId, type, payload } = body;
+  if (!userId || !type) return res.status(400).json({ message: "Missing userId or type" });
+  activeUsers[userId] = activeUsers[userId] || { cmds: [] };
+  const cmd = { id: Date.now().toString(36), type, payload, ts: Date.now() };
+  activeUsers[userId].cmds.push(cmd);
+  return res.json({ ok: true, cmd });
+};
