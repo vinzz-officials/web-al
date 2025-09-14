@@ -1,13 +1,13 @@
 import cookie from "cookie";
 
 export default function handler(req, res) {
-  // Hapus cookie adminToken
+  // Hapus cookie client
   res.setHeader(
     "Set-Cookie",
     cookie.serialize("adminToken", "", {
-      httpOnly: true, // samain sama saat login (biar server yang kelola)
+      httpOnly: false, 
       secure: process.env.NODE_ENV === "production",
-      maxAge: 0, // hapus cookie
+      maxAge: 0,
       path: "/",
     })
   );
