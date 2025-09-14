@@ -11,32 +11,27 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     const body = await parseBody(req);
-    const target = body.userId;
-    const type = body.type; // "alert" atau "block"
-    const message = body.message || '';
+    const { targetId, type, message } = body;
 
-    if (!target || !type) {
-      return res.status(400).json({ error: 'Missing target or type' });
+    if (!targetId || !type) {
+      return res.status(400).json({ error: 'Missing fields' });
     }
 
-    // masukkan command ke user
-    if (store[target]) {
-      store[target].cmds = store[target].cmds || [];
-      store[target].cmds.push({ type, message });
-    }
+    if (!store[targetId]) store[targetId] = { cmds: [] };
+    store[targetId].cmds = store[targetId].cmds || [];
+    store[targetId].cmds.push({ type, message });
 
     return res.status(200).json({ success: true });
   }
 
   if (req.method === 'GET') {
     const { userId } = req.query;
-    if (!userId || !store[userId]) {
-      return res.status(200).json({ cmds: [] });
-    }
+    if (!userId) return res.status(400).json({ error: 'Missing userId' });
 
+    if (!store[userId]) store[userId] = { cmds: [] };
     const cmds = store[userId].cmds || [];
-    // setelah dikirim ke client, kosongkan agar tidak spam
-    store[userId].cmds = [];
+    store[userId].cmds = []; // kosongkan setelah dikirim biar sekali jalan
+
     return res.status(200).json({ cmds });
   }
 
