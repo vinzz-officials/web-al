@@ -1,39 +1,35 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Admin Panel</title>
-<link rel="stylesheet" href="/admin.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="/admin.css">
 </head>
 <body>
-<div class="wrap">
-  <h1>Admin Panel</h1>
-  <div class="auth">
-    <label>Admin JWT token: <input id="token" placeholder="Bearer token..." /></label>
-    <button id="btnRefresh">Refresh</button>
-  </div>
+  <header>
+    <h1>Admin Panel</h1>
+    <button id="logoutBtn">Logout</button>
+  </header>
 
-  <section>
-    <h2>Active Users</h2>
-    <table id="usersTable">
-      <thead><tr><th>User ID</th><th>IP</th><th>Last Seen</th><th>Pending</th><th>Actions</th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </section>
+  <main>
+    <section>
+      <h2>User Aktif</h2>
+      <table id="userTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>IP</th>
+            <th>User Agent</th>
+            <th>Last Seen</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
 
-  <section>
-    <h2>Blocked IPs</h2>
-    <div>
-      <input id="blockIpInput" placeholder="IP to block/unblock" />
-      <button id="btnBlock">Block</button>
-      <button id="btnUnblock">Unblock</button>
-      <button id="btnListBlocked">List</button>
-    </div>
-    <ul id="blockedList"></ul>
-  </section>
-</div>
-
-<script src="/admin.js"></script>
+  <script src="/admin.js"></script>
 </body>
 </html>
