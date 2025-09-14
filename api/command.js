@@ -1,51 +1,38 @@
-const jwt = require("jsonwebtoken");
-const fs = require("fs");
-const JWT_SECRET = process.env.JWT_SECRET || "please-change-me";
-let activeUsers = global.__ACTIVE_USERS = global.__ACTIVE_USERS || {};
+// POST { type, target, message? }
+// type = "alert" | "block"
+const parseBody = async (req) => {
+  if (req.body) return req.body
+  const chunks = []
+  for await (const c of req) chunks.push(c)
+  try { return JSON.parse(Buffer.concat(chunks).toString() || "{}") } catch { return {} }
+}
 
-function parseCookies(cookieHeader) {
-  const out = {};
-  if (!cookieHeader) return out;
-  for (const part of cookieHeader.split(';')) {
-    const idx = part.indexOf('=');
-    if (idx === -1) continue;
-    const key = part.slice(0, idx).trim();
-    const val = decodeURIComponent(part.slice(idx+1).trim());
-    out[key] = val;
+export default async function handler(req, res) {
+  const store = global.__ACTIVE_USERS = global.__ACTIVE_USERS || {}
+  const blocked = global.__BLOCKED_IPS = global.__BLOCKED_IPS || []
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' })
   }
-  return out;
-}
 
-function verifyAdmin(req) {
-  const auth = (req.headers && req.headers.authorization) || "";
-  if (auth.startsWith("Bearer ")) {
-    try {
-      const token = auth.split(" ")[1];
-      const p = jwt.verify(token, JWT_SECRET);
-      return p && p.role === "admin";
-    } catch { /* ignore */ }
+  const body = await parseBody(req)
+  const { type, target, message } = body
+
+  if (type === 'block') {
+    // target bisa berupa IP atau userId
+    let ip = target
+    if (store[target]) ip = store[target].ip
+    if (ip && !blocked.includes(ip)) blocked.push(ip)
+
+    return res.json({ success: true, blocked })
   }
-  // fallback: accept adminToken cookie from the provided simple login flow
-  const cookies = parseCookies(req.headers && req.headers.cookie || "");
-  if (cookies.adminToken && cookies.adminToken === "Control Web by Vinzz") return true;
-  return false;
-}
 
-async function parseBody(req){
-  const chunks = [];
-  for await (const c of req) chunks.push(c);
-  try { return JSON.parse(Buffer.concat(chunks).toString() || "{}"); } catch { return {}; }
-}
+  if (type === 'alert') {
+    if (!store[target]) return res.status(404).json({ error: 'User not found' })
+    store[target].cmds = store[target].cmds || []
+    store[target].cmds.push({ type: 'alert', message, ts: Date.now() })
+    return res.json({ success: true })
+  }
 
-module.exports = async (req, res) => {
-  // POST { userId, type: "alert"|"custom", payload: {...} }
-  if (req.method !== "POST") return res.status(405).json({ message: "Method not allowed" });
-  if (!verifyAdmin(req)) return res.status(401).json({ message: "Unauthorized" });
-  const body = await parseBody(req);
-  const { userId, type, payload } = body;
-  if (!userId || !type) return res.status(400).json({ message: "Missing userId or type" });
-  activeUsers[userId] = activeUsers[userId] || { cmds: [] };
-  const cmd = { id: Date.now().toString(36), type, payload, ts: Date.now() };
-  activeUsers[userId].cmds.push(cmd);
-  return res.json({ ok: true, cmd });
-};
+  return res.status(400).json({ error: 'Invalid command' })
+}
