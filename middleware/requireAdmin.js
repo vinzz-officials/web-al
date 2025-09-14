@@ -1,8 +1,7 @@
-// middleware/requireAdmin.js
 export function requireAdmin(req, res) {
-  const isLoggedIn = req.cookies?.adminToken === process.env.ADMIN_SECRET;
-  if (!isLoggedIn) {
-    res.writeHead(302, { Location: "/login" });
+  const token = req.cookies?.adminToken;
+  if (token !== "Control Web by Vinzz") {
+    res.writeHead(302, { Location: "/login.html" });
     res.end();
     return null;
   }
