@@ -90,30 +90,37 @@ async function unblockIp(ip) {
 
 async function fetchBlocked() {
   try {
-    const res = await fetch('/api/blocked-ips.js'); // this file exports functions, but we also expose the raw file; easier: call active endpoint to get global.__BLOCKED_IPS via a small hack
-  } catch {}
-  // Instead, call block-ip with a fake body to get blocked list? There's no GET; so we'll request the root blocked-ips.js file to parse contents (simple and reliable for this small project)
-  try {
-    const txt = await fetch('/blocked-ips.js').then(r => r.text());
-    // crude parse: look for "let blockedIPs" assignment
-    const m = txt.match(/let\s+blockedIPs\s*=\s*(global\.__BLOCKED_IPS\s*=\s*)?(\[.*?\]);/s);
+    const res = await fetch('/api/block-ip', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'list' }) // khusus minta daftar
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    const data = await res.json();
     const outEl = document.getElementById('blockedList');
     outEl.innerHTML = '';
-    if (m && m[2]) {
-      const arr = JSON.parse(m[2].replace(/\n/g,''));
-      arr.forEach(ip=> {
-        const li = document.createElement('li');
-        li.textContent = ip;
-        const btn = document.createElement('button');
-        btn.textContent = 'Unblock';
-        btn.style.marginLeft='8px';
-        btn.addEventListener('click', async ()=> { if (confirm('Unblock '+ip+'?')) { await unblockIp(ip); fetchUsers(); }});
-        li.appendChild(btn);
-        outEl.appendChild(li);
+
+    (data.blocked || []).forEach(ip => {
+      const li = document.createElement('li');
+      li.textContent = ip;
+
+      const btn = document.createElement('button');
+      btn.textContent = 'Unblock';
+      btn.style.marginLeft = '8px';
+      btn.addEventListener('click', async () => {
+        if (confirm('Unblock ' + ip + '?')) {
+          await unblockIp(ip);
+          fetchBlocked();
+        }
       });
-    }
+
+      li.appendChild(btn);
+      outEl.appendChild(li);
+    });
   } catch (e) {
-    // ignore parsing errors
+    console.error('fetchBlocked error', e);
   }
 }
 
