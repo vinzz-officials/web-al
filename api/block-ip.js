@@ -1,4 +1,4 @@
-exportd-ips { addBlocked, removeBlocked, getBlocked } from "../public/blocked-ips.js";
+export-ips { addBlocked, removeBlocked, getBlocked } from "../public/blocked-ips.js";
 
 export default async function handler(req, res) {
   const { ip, action } = req.body;
