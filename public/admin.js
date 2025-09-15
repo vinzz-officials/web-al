@@ -17,7 +17,6 @@ async function fetchUsers() {
 }
 
 function renderTable(users) {
-  // dedupe by id and sort by lastSeen desc
   const uniq = {};
   users.forEach(u => { if (u && u.id) uniq[u.id] = u; });
   const list = Object.values(uniq).sort((a,b)=> (b.lastSeen||0) - (a.lastSeen||0));
@@ -28,7 +27,7 @@ function renderTable(users) {
     const tr = document.createElement('tr');
     const online = (now - (u.lastSeen || 0)) <= 30000;
     tr.innerHTML = `
-      <td><span class="status-dot ${online ? 'status-online' : 'status-off'}" title="${online ? 'online' : 'offline'}"></span></td>
+      <td><span class="status-dot ${online ? 'status-online' : 'status-off'}"></span></td>
       <td>${u.id}</td>
       <td>${u.ip || '-'}</td>
       <td>
@@ -37,7 +36,6 @@ function renderTable(users) {
     `;
     tr.dataset.userid = u.id;
     tr.addEventListener('click', (ev)=>{
-      // avoid selecting when clicking the block button
       if (ev.target && ev.target.tagName === 'BUTTON') return;
       selectUser(u.id, tr);
     });
@@ -52,7 +50,6 @@ function renderTable(users) {
     });
     tbody.appendChild(tr);
   });
-  // update selected highlight
   highlightSelected();
 }
 
@@ -64,17 +61,18 @@ function selectUser(id, rowEl) {
 
 function highlightSelected() {
   document.querySelectorAll('#userTable tbody tr').forEach(tr=>{
-    if (tr.dataset.userid === selectedUser) tr.classList.add('selected-row'); else tr.classList.remove('selected-row');
+    if (tr.dataset.userid === selectedUser) tr.classList.add('selected-row');
+    else tr.classList.remove('selected-row');
   });
 }
 
 async function blockIp(ip) {
   try {
-    const res = await fetch('/api/block-ip', {
+    const res = await fetch('/api/blocked-store', {
       method: 'POST',
       credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ip, action: 'add' })
+      body: JSON.stringify({ action: 'add', ip })
     });
 
     if (!res.ok) {
@@ -85,9 +83,7 @@ async function blockIp(ip) {
     }
 
     const data = await res.json();
-    console.log("✅ User berhasil di-block:", ip, data);
     alert("✅ User berhasil di-block: " + ip);
-
     await fetchBlocked();
   } catch (err) {
     console.error("Error blockIp:", err);
@@ -97,11 +93,11 @@ async function blockIp(ip) {
 
 async function unblockIp(ip) {
   try {
-    const res = await fetch('/api/block-ip', {
+    const res = await fetch('/api/blocked-store', {
       method: 'POST',
       credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ip, action: 'remove' })
+      body: JSON.stringify({ action: 'remove', ip })
     });
 
     if (!res.ok) {
@@ -112,9 +108,7 @@ async function unblockIp(ip) {
     }
 
     const data = await res.json();
-    console.log("✅ User berhasil di-unblock:", ip, data);
     alert("✅ User berhasil di-unblock: " + ip);
-
     await fetchBlocked();
   } catch (err) {
     console.error("Error unblockIp:", err);
@@ -122,14 +116,11 @@ async function unblockIp(ip) {
   }
 }
 
-
 async function fetchBlocked() {
   try {
-    const res = await fetch('/api/block-ip', {
-      method: 'POST',
+    const res = await fetch('/api/blocked-store', {
+      method: 'GET',
       credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'list' }) // khusus minta daftar
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
 
@@ -179,14 +170,14 @@ document.getElementById('unblockIpBtn').addEventListener('click', async ()=>{
 
 document.getElementById('sendAlertBtn').addEventListener('click', async ()=>{
   const msg = document.getElementById('alertMsg').value.trim();
-  if (!selectedUser) return alert('Pilih user aktif dulu (klik baris user)');
+  if (!selectedUser) return alert('Pilih user aktif dulu');
   if (!msg) return alert('Tulis pesan alert');
 
   const res = await fetch('/api/command', {
     method: 'POST',
     credentials: 'same-origin',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ targetId: selectedUser, type: 'alert', message: msg }) // ← sinkron sama API
+    body: JSON.stringify({ targetId: selectedUser, type: 'alert', message: msg })
   });
 
   if (res.ok) {
