@@ -10,7 +10,7 @@ async function fetchUsers() {
     }
     const data = await res.json();
     renderTable(data.users || []);
-    // fetchBlocked(); // ← kalau mau buang sistem IP, bisa hapus baris ini
+    fetchBlocked();
   } catch (e) {
     console.error('Fetch error', e);
   }
@@ -32,34 +32,27 @@ function renderTable(users) {
       <td>${u.id}</td>
       <td>${u.ip || '-'}</td>
       <td>
-        <button class="block-btn small" data-id="${u.id}">Block</button>
-        <button class="unblock-btn small" data-id="${u.id}">Unblock</button>
+        <button class="block-btn small" data-ip="${u.ip}">Block IP</button>
       </td>
     `;
     tr.dataset.userid = u.id;
     tr.addEventListener('click', (ev)=>{
-      if (ev.target && ev.target.tagName === 'BUTTON') return; // skip kalau klik tombol
+      // avoid selecting when clicking the block button
+      if (ev.target && ev.target.tagName === 'BUTTON') return;
       selectUser(u.id, tr);
     });
-
-    const blockBtn = tr.querySelector('.block-btn');
+    const blockBtn = tr.querySelector('button.block-btn');
     blockBtn.addEventListener('click', async (e)=>{
       e.stopPropagation();
-      if (!confirm('Block user ini?')) return;
-      await blockUser();
+      const ip = e.currentTarget.dataset.ip;
+      if (!ip) return alert('IP tidak tersedia');
+      if (!confirm('Block IP ' + ip + '?')) return;
+      await blockIp(ip);
       await fetchUsers();
     });
-
-    const unblockBtn = tr.querySelector('.unblock-btn');
-    unblockBtn.addEventListener('click', async (e)=>{
-      e.stopPropagation();
-      if (!confirm('Unblock user ini?')) return;
-      await unblockUser();
-      await fetchUsers();
-    });
-
     tbody.appendChild(tr);
   });
+  // update selected highlight
   highlightSelected();
 }
 
@@ -71,35 +64,118 @@ function selectUser(id, rowEl) {
 
 function highlightSelected() {
   document.querySelectorAll('#userTable tbody tr').forEach(tr=>{
-    if (tr.dataset.userid === selectedUser) tr.classList.add('selected-row'); 
-    else tr.classList.remove('selected-row');
+    if (tr.dataset.userid === selectedUser) tr.classList.add('selected-row'); else tr.classList.remove('selected-row');
   });
 }
 
-async function blockUser() {
-  const res = await fetch("/api/ban", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "ban" }),
-  });
-  const data = await res.json();
-  alert(data.success ? "User berhasil diblok!" : "Gagal blokir");
+async function blockIp(ip) {
+  try {
+    const res = await fetch('/api/block-ip', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ip, action: 'add' })
+    });
+
+    if (!res.ok) {
+      const txt = await res.text();
+      console.error("Gagal block IP:", res.status, txt);
+      alert("❌ Gagal block user: " + ip);
+      return;
+    }
+
+    const data = await res.json();
+    console.log("✅ User berhasil di-block:", ip, data);
+    alert("✅ User berhasil di-block: " + ip);
+
+    await fetchBlocked();
+  } catch (err) {
+    console.error("Error blockIp:", err);
+    alert("❌ Error blockIp: " + err.message);
+  }
 }
 
-async function unblockUser() {
-  const res = await fetch("/api/ban", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "unban" }),
-  });
-  const data = await res.json();
-  alert(data.success ? "User berhasil diunban!" : "Gagal unban");
+async function unblockIp(ip) {
+  try {
+    const res = await fetch('/api/block-ip', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ip, action: 'remove' })
+    });
+
+    if (!res.ok) {
+      const txt = await res.text();
+      console.error("Gagal unblock IP:", res.status, txt);
+      alert("❌ Gagal unblock user: " + ip);
+      return;
+    }
+
+    const data = await res.json();
+    console.log("✅ User berhasil di-unblock:", ip, data);
+    alert("✅ User berhasil di-unblock: " + ip);
+
+    await fetchBlocked();
+  } catch (err) {
+    console.error("Error unblockIp:", err);
+    alert("❌ Error unblockIp: " + err.message);
+  }
 }
 
-// ⚠️ Opsional: kalau mau hapus semua jejak block-ip lama, buang fungsi ini dan tombol HTML terkait
+
 async function fetchBlocked() {
-  console.log("fetchBlocked disabled, sistem block-ip sudah tidak digunakan.");
+  try {
+    const res = await fetch('/api/block-ip', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'list' }) // khusus minta daftar
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    const data = await res.json();
+    const outEl = document.getElementById('blockedList');
+    outEl.innerHTML = '';
+
+    (data.blocked || []).forEach(ip => {
+      const li = document.createElement('li');
+      li.textContent = ip;
+
+      const btn = document.createElement('button');
+      btn.textContent = 'Unblock';
+      btn.style.marginLeft = '8px';
+      btn.addEventListener('click', async () => {
+        if (confirm('Unblock ' + ip + '?')) {
+          await unblockIp(ip);
+          fetchBlocked();
+        }
+      });
+
+      li.appendChild(btn);
+      outEl.appendChild(li);
+    });
+  } catch (e) {
+    console.error('fetchBlocked error', e);
+  }
 }
+
+document.getElementById('blockIpBtn').addEventListener('click', async ()=>{
+  const ip = document.getElementById('customIp').value.trim();
+  if (!ip) return alert('Masukkan IP');
+  if (!confirm('Block ' + ip + '?')) return;
+  await blockIp(ip);
+  document.getElementById('customIp').value = '';
+  fetchUsers();
+});
+
+document.getElementById('unblockIpBtn').addEventListener('click', async ()=>{
+  const ip = document.getElementById('customIp').value.trim();
+  if (!ip) return alert('Masukkan IP');
+  if (!confirm('Unblock ' + ip + '?')) return;
+  await unblockIp(ip);
+  document.getElementById('customIp').value = '';
+  fetchUsers();
+});
 
 document.getElementById('sendAlertBtn').addEventListener('click', async ()=>{
   const msg = document.getElementById('alertMsg').value.trim();
@@ -110,7 +186,7 @@ document.getElementById('sendAlertBtn').addEventListener('click', async ()=>{
     method: 'POST',
     credentials: 'same-origin',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ targetId: selectedUser, type: 'alert', message: msg })
+    body: JSON.stringify({ targetId: selectedUser, type: 'alert', message: msg }) // ← sinkron sama API
   });
 
   if (res.ok) {
