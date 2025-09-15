@@ -20,7 +20,7 @@ const html = `<!DOCTYPE html>
     <p class="mt-4 text-lg md:text-xl max-w-2xl mx-auto text-gray-300" data-aos="fade-up" data-aos-delay="200">
       Saya seorang pemuda yang sedang menekuni dunia pemrograman, senang mencoba hal-hal baru, dan percaya bahwa setiap baris kode bisa mengubah sesuatu menjadi lebih baik.
     </p>
-    <a href="index.html" class="mt-8 inline-block px-6 py-3 bg-cyan-400 text-gray-900 font-semibold rounded-lg shadow-md hover:bg-cyan-300" data-aos="fade-up" data-aos-delay="400">Kembali ke Portofolio</a>
+    <a href="/" class="mt-8 inline-block px-6 py-3 bg-cyan-400 text-gray-900 font-semibold rounded-lg shadow-md hover:bg-cyan-300" data-aos="fade-up" data-aos-delay="400">Kembali ke Portofolio</a>
   </section>
 
   <!-- Biodata -->
