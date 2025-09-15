@@ -4,24 +4,22 @@ let cachedBlocked = [];
 let lastFetch = 0;
 
 async function getBlocked() {
-  const now = Date.now();
-  // cache 5 detik biar gak spam API
-  if (now - lastFetch < 5000 && cachedBlocked.length) {
-    return cachedBlocked;
-  }
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/blocked`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/block-ip`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "list" }),
       cache: "no-store",
     });
+
     if (res.ok) {
       const data = await res.json();
-      cachedBlocked = data.blocked || [];
-      lastFetch = now;
+      return data.blocked || [];
     }
   } catch (e) {
     console.error("middleware fetch blocked error", e);
   }
-  return cachedBlocked;
+  return [];
 }
 
 export async function middleware(req) {
