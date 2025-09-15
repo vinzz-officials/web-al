@@ -1,4 +1,4 @@
-import { addBlocked, removeBlocked, getBlocked } from "../blocked-ips.js";
+import { addBlocked, removeBlocked, getBlocked } from "../../blocked-ips.js";
 
 const parseBody = async (req) => {
   if (req.body) return req.body;
