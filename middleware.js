@@ -1,37 +1,29 @@
 import { NextResponse } from "next/server";
 
 export async function middleware(req) {
-  let blocked = [];
+  const url = req.nextUrl.clone();
+  const { pathname } = url;
 
-  try {
-    // WAJIB pakai absolute URL (vercel env var)
-    const apiUrl = `${process.env.VERCEL_URL ? "https://" + process.env.VERCEL_URL : process.env.NEXT_PUBLIC_BASE_URL}/api/block-ip`;
+  // === Cek cookie ===
+  const session = req.cookies.get("admin_session")?.value;
+  const banned = req.cookies.get("banned_session")?.value;
 
-    const res = await fetch(apiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "list" }),
-      cache: "no-store",
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      blocked = data.blocked || [];
-    }
-  } catch (e) {
-    // Jangan pakai console.error di Edge → ganti silent
+  // Kalau device kebanned → redirect ke blocked
+  if (banned) {
+    url.pathname = "/blocked.html";
+    return NextResponse.redirect(url);
   }
 
-  const ip =
-    (req.headers.get("x-forwarded-for") || "").split(",")[0].trim();
-
-  if (blocked.includes(ip)) {
-    return NextResponse.redirect(new URL("/blocked.html", req.url));
+  // Proteksi halaman admin
+  const protectedPaths = ["/admin.html"];
+  if (protectedPaths.includes(pathname) && !session) {
+    url.pathname = "/login.html";
+    return NextResponse.redirect(url);
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: "/:path*",
+  matcher: ["/:path*"], // semua request dicek
 };
