@@ -1,21 +1,11 @@
-// endpoint used by client pages to announce presence
-// POST { userId }
-let store = global.__ACTIVE_USERS = global.__ACTIVE_USERS || {};
-const parseBody = async (req) => {
-  if (req.body) return req.body;
-  const chunks = [];
-  for await (const c of req) chunks.push(c);
-  try { return JSON.parse(Buffer.concat(chunks).toString() || "{}"); } catch { return {}; }
-};
-
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ message: 'Method not allowed' });
 
   const body = await parseBody(req);
   const userId = body && body.userId;
   if (!userId) return res.status(400).json({ message: 'Missing userId' });
 
-  const ip = (req.headers['x-forwarded-for'] || req.socket && req.socket.remoteAddress || '').split(',')[0].trim();
+  const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '').split(',')[0].trim();
   const ua = req.headers['user-agent'] || 'unknown';
   const blocked = global.__BLOCKED_IPS || [];
 
@@ -32,4 +22,4 @@ module.exports = async (req, res) => {
   }
 
   return res.json({ success: true });
-};
+}
