@@ -4,16 +4,11 @@ export async function middleware(req) {
   let blocked = [];
 
   try {
-    const apiUrl = `${
-      process.env.VERCEL_URL
-        ? "https://" + process.env.VERCEL_URL
-        : process.env.NEXT_PUBLIC_BASE_URL
-    }/api/block-ip`;
-
-    const res = await fetch(apiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "list" }),
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/blocked-store`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${process.env.ADMIN_API_KEY || "changeme"}`
+      },
       cache: "no-store",
     });
 
@@ -22,10 +17,9 @@ export async function middleware(req) {
       blocked = data.blocked || [];
     }
   } catch (e) {
-    // silent
+    console.error("Middleware fetch failed:", e);
   }
 
-  // 🔧 FIX: ambil IP dengan fallback
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
     req.ip ||
@@ -35,6 +29,9 @@ export async function middleware(req) {
   if (blocked.includes(ip)) {
     return NextResponse.redirect(new URL("/blocked.html", req.url));
   }
+
+  return NextResponse.next();
+}  }
 
   return NextResponse.next();
 }
