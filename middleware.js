@@ -6,9 +6,6 @@ export async function middleware(req) {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/blocked-store`, {
       method: "GET",
-      headers: {
-        "Authorization": `Bearer ${process.env.ADMIN_API_KEY || "changeme"}`
-      },
       cache: "no-store",
     });
 
@@ -22,15 +19,16 @@ export async function middleware(req) {
 
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
-    req.ip ||
     req.headers.get("x-real-ip") ||
     "";
+
+  console.log("Detected IP:", ip, "Blocked list:", blocked);
 
   if (blocked.includes(ip)) {
     return NextResponse.redirect(new URL("/blocked.html", req.url));
   }
 
-  return NextResponse.next(); // ✅ cuma sekali aja
+  return NextResponse.next();
 }
 
 export const config = {
