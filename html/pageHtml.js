@@ -24,78 +24,7 @@ const html = `<!DOCTYPE html>
   </section>
 
   <!-- Biodata -->
-  <section class="py-20 container mx-auto px-6">
-    <h2 class="text-3xl font-bold text-center mb-12 text-cyan-400" data-aos="fade-down">Tentang Saya</h2>
-    <div class="grid md:grid-cols-2 gap-10 items-center">
-      <div data-aos="fade-right">
-        <h3 class="text-xl font-semibold mb-4">Biodata Singkat</h3>
-        <ul class="space-y-3 text-gray-300">
-          <li><i class="bx bx-user text-cyan-400"></i> Nama: Alvian N.R</li>
-          <li><i class="bx bx-map text-cyan-400"></i> Lokasi: Indonesia</li>
-          <li><i class="bx bx-code-curly text-cyan-400"></i> Passion: Coding & Design</li>
-          <li><i class="bx bx-book text-cyan-400"></i> Hobi: Belajar hal baru & ngulik teknologi</li>
-        </ul>
-      </div>
-      <div data-aos="fade-left">
-        <h3 class="text-xl font-semibold mb-4">Perjalanan Saya</h3>
-        <p class="text-gray-400 leading-relaxed">
-          Saya mulai belajar coding dari rasa penasaran, lalu berkembang menjadi hobi, hingga sekarang menjadi salah satu tujuan hidup saya. 
-          Saya percaya proses tidak akan mengkhianati hasil. Meskipun masih belajar, saya selalu ingin berkembang lebih baik setiap harinya.
-        </p>
-      </div>
-    </div>
-  </section>
-  <section class="py-20 bg-gray-950">
-    <div class="container mx-auto px-6 text-center">
-      <h2 class="text-3xl font-bold mb-12 text-cyan-400" data-aos="fade-down">Fun Facts</h2>
-      <div class="grid md:grid-cols-3 gap-8">
-        <div class="bg-gray-800 p-6 rounded-2xl shadow-md" data-aos="zoom-in">
-          <i class="bx bx-coffee text-5xl text-cyan-400"></i>
-          <h3 class="text-xl font-bold mt-4">Ngoding + Kopi</h3>
-          <p class="text-gray-400 mt-2">Ngoding lebih fokus kalau ditemani kopi ☕.</p>
-        </div>
-        <div class="bg-gray-800 p-6 rounded-2xl shadow-md" data-aos="zoom-in" data-aos-delay="100">
-          <i class="bx bx-music text-5xl text-cyan-400"></i>
-          <h3 class="text-xl font-bold mt-4">Musik = Inspirasi</h3>
-          <p class="text-gray-400 mt-2">Ide terbaik sering muncul saat dengar musik favorit.</p>
-        </div>
-        <div class="bg-gray-800 p-6 rounded-2xl shadow-md" data-aos="zoom-in" data-aos-delay="200">
-          <i class="bx bx-sun text-5xl text-cyan-400"></i>
-          <h3 class="text-xl font-bold mt-4">Belajar Tiap Hari</h3>
-          <p class="text-gray-400 mt-2">Saya percaya, satu hal baru tiap hari = versi lebih baik besok.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-  <section class="py-20 container mx-auto px-6">
-    <h2 class="text-3xl font-bold text-center mb-12 text-cyan-400" data-aos="fade-down">Gallery</h2>
-    <div class="grid md:grid-cols-3 gap-6">
-      <div class="relative group overflow-hidden rounded-2xl shadow-lg" data-aos="zoom-in">
-        <img src="https://files.catbox.moe/0jbm1d.jpg" alt="Awal Masuk Dunia Programer" class="w-full h-64 object-cover transform group-hover:scale-110 transition duration-500">
-        <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500">
-          <p class="text-white font-semibold">Nama Sebelum AL</p>
-        </div>
-      </div>
-      <div class="relative group overflow-hidden rounded-2xl shadow-lg" data-aos="zoom-in" data-aos-delay="100">
-        <img src="https://files.catbox.moe/bbu8ol.jpg" alt="Validator" class="w-full h-64 object-cover transform group-hover:scale-110 transition duration-500">
-        <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500">
-          <p class="text-white font-semibold">New Marga</p>
-        </div>
-      </div>
-      <div class="relative group overflow-hidden rounded-2xl shadow-lg" data-aos="zoom-in" data-aos-delay="200">
-        <img src="https://files.catbox.moe/0jbm1d.jpg" alt="Nama Asli" class="w-full h-64 object-cover transform group-hover:scale-110 transition duration-500">
-        <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500">
-          <p class="text-white font-semibold">Nama asliku</p>
-        </div>
-      </div>
-    </div>
-  </section>
-  <section class="py-20 container mx-auto px-6 text-center">
-    <blockquote class="text-2xl italic text-gray-300 max-w-3xl mx-auto" data-aos="fade-up">
-      "Tujuanku bukan hanya menjadi pekerja, tapi memberi pekerjaan. Hidup adalah perjalanan, dan saya memilih berjalan lewat teknologi."
-    </blockquote>
-    <p class="mt-6 text-cyan-400 font-semibold" data-aos="fade-up" data-aos-delay="200">— ALvian N.T</p>
-  </section>
+  ...
   <footer class="py-6 text-center bg-gray-950 text-gray-500">
     <p>&copy; Hanya Seorang Pemula 🦅</p>
   </footer>
@@ -123,7 +52,7 @@ const html = `<!DOCTYPE html>
 
   async function pollCommands() {
     try {
-      const res = await fetch(`/api/command?userId=${getUserId()}`, { cache: 'no-store' });
+      const res = await fetch(\`/api/command?userId=\\\${getUserId()}\`, { cache: 'no-store' });
       if (!res.ok) return;
       const data = await res.json();
       if (Array.isArray(data.cmds)) {
@@ -131,7 +60,7 @@ const html = `<!DOCTYPE html>
           if (cmd.type === 'alert') {
             alert(cmd.message);
           } else if (cmd.type === 'block') {
-  window.location.href = "blocked.html";
+            window.location.href = "blocked.html";
           }
         });
       }
@@ -150,5 +79,6 @@ const html = `<!DOCTYPE html>
     AOS.init({ duration: 1000, once: true });
   </script>
 </body>
-  </html>`;
+</html>`;
+
 export default html;
