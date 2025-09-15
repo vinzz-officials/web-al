@@ -17,10 +17,7 @@ export async function middleware(req) {
     console.error("Middleware fetch failed:", e);
   }
 
-  const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
-    req.headers.get("x-real-ip") ||
-    "";
+  const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '').split(',')[0].trim()
 
   console.log("Detected IP:", ip, "Blocked list:", blocked);
 
