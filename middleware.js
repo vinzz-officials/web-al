@@ -4,8 +4,11 @@ export async function middleware(req) {
   let blocked = [];
 
   try {
-    // WAJIB pakai absolute URL (vercel env var)
-    const apiUrl = `${process.env.VERCEL_URL ? "https://" + process.env.VERCEL_URL : process.env.NEXT_PUBLIC_BASE_URL}/api/block-ip`;
+    const apiUrl = `${
+      process.env.VERCEL_URL
+        ? "https://" + process.env.VERCEL_URL
+        : process.env.NEXT_PUBLIC_BASE_URL
+    }/api/block-ip`;
 
     const res = await fetch(apiUrl, {
       method: "POST",
@@ -19,11 +22,15 @@ export async function middleware(req) {
       blocked = data.blocked || [];
     }
   } catch (e) {
-    // Jangan pakai console.error di Edge → ganti silent
+    // silent
   }
 
+  // 🔧 FIX: ambil IP dengan fallback
   const ip =
-    (req.headers.get("x-forwarded-for") || "").split(",")[0].trim();
+    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+    req.ip ||
+    req.headers.get("x-real-ip") ||
+    "";
 
   if (blocked.includes(ip)) {
     return NextResponse.redirect(new URL("/blocked.html", req.url));
