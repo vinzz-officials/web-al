@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -150,4 +150,5 @@
     AOS.init({ duration: 1000, once: true });
   </script>
 </body>
-  </html>
+  </html>`;
+export default html;
