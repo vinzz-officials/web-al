@@ -30,10 +30,7 @@ export async function middleware(req) {
     return NextResponse.redirect(new URL("/blocked.html", req.url));
   }
 
-  return NextResponse.next();
-}
-
-  return NextResponse.next();
+  return NextResponse.next(); // ✅ cuma sekali aja
 }
 
 export const config = {
