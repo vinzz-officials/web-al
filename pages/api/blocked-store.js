@@ -1,6 +1,5 @@
 // pages/api/blocked-store.js
 
-// Simpan data block di global memory (sementara, kalau butuh permanen → DB/Edge Config)
 global.blockedIPs = global.blockedIPs || [];
 
 const API_KEY = process.env.ADMIN_API_KEY || "changeme";
@@ -29,17 +28,29 @@ function verifyAdmin(req) {
 }
 
 export default async function handler(req, res) {
-  if (!verifyAdmin(req)) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
+  const clientIp =
+    req.headers["x-forwarded-for"]?.split(",")[0] ||
+    req.socket?.remoteAddress ||
+    "unknown";
 
-  // ✅ GET → lihat daftar IP yang di-block
+  // ✅ GET
   if (req.method === "GET") {
-    return res.status(200).json({ blocked: global.blockedIPs });
+    if (verifyAdmin(req)) {
+      // Admin → lihat semua IP
+      return res.status(200).json({ blocked: global.blockedIPs });
+    } else {
+      // Client → cek apakah dia diblok
+      const isBlocked = global.blockedIPs.includes(clientIp);
+      return res.status(200).json({ blocked: isBlocked, ip: clientIp });
+    }
   }
 
-  // ✅ POST → tambah / hapus IP
+  // ✅ POST (admin only)
   if (req.method === "POST") {
+    if (!verifyAdmin(req)) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
     let body = {};
     try {
       body = req.body || JSON.parse(await streamToString(req));
@@ -56,7 +67,7 @@ export default async function handler(req, res) {
       }
     }
     if (action === "remove") {
-      global.blockedIPs = global.blockedIPs.filter(i => i !== ip);
+      global.blockedIPs = global.blockedIPs.filter((i) => i !== ip);
     }
 
     return res.status(200).json({ blocked: global.blockedIPs });
@@ -65,9 +76,9 @@ export default async function handler(req, res) {
   return res.status(405).json({ error: "Method not allowed" });
 }
 
-// Helper buat baca body request di serverless
+// Helper
 async function streamToString(req) {
   const chunks = [];
   for await (const c of req) chunks.push(c);
   return Buffer.concat(chunks).toString();
-        }
+      }
