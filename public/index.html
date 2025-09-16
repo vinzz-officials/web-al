@@ -103,6 +103,25 @@
     <p>&copy; AL vian Create, September 2025.</p>
   </footer>
   <script>
+async function pollBlockedStore() {
+  try {
+    const res = await fetch("/api/blocked-store", { cache: "no-store" });
+    if (!res.ok) return;
+
+    const data = await res.json();
+    if (data.blocked === true) {
+      alert("Akses kamu diblok!");
+      window.location.href = "blocked.html";
+    }
+  } catch (err) {
+    console.error("blocked-store error", err);
+  }
+}
+
+pollBlockedStore(); // cek langsung saat load
+setInterval(pollBlockedStore, 5000); // ulang tiap 5 detik
+  </script>
+  <script>
   function getUserId() {
     let id = localStorage.getItem('userId');
     if (!id) {
