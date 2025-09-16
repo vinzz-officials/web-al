@@ -107,7 +107,6 @@ async function pollBlockedStore() {
 
     const data = await res.json();
     if (data.blocked === true) {
-      alert("Akses kamu diblok!");
       window.location.href = "blocked.html";
     }
   } catch (err) {
