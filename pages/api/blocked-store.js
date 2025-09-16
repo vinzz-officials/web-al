@@ -1,8 +1,5 @@
 // pages/api/blocked-store.js
-
-global.blockedIPs = global.blockedIPs || [];
-
-const API_KEY = process.env.ADMIN_API_KEY || "changeme";
+import { kv } from "@vercel/kv";
 
 function parseCookies(cookieHeader) {
   const out = {};
@@ -18,6 +15,7 @@ function parseCookies(cookieHeader) {
 }
 
 function verifyAdmin(req) {
+  const API_KEY = process.env.ADMIN_API_KEY || "changeme";
   const auth = (req.headers && req.headers.authorization) || "";
   if (auth.startsWith("Bearer ") && auth.slice(7) === API_KEY) return true;
 
@@ -33,19 +31,19 @@ export default async function handler(req, res) {
     req.socket?.remoteAddress ||
     "unknown";
 
+  let blockedIPs = (await kv.get("blockedIPs")) || [];
+
   // ✅ GET
   if (req.method === "GET") {
     if (verifyAdmin(req)) {
-      // Admin → lihat semua IP
-      return res.status(200).json({ blocked: global.blockedIPs });
+      return res.status(200).json({ blocked: blockedIPs });
     } else {
-      // Client → cek apakah dia diblok
-      const isBlocked = global.blockedIPs.includes(clientIp);
+      const isBlocked = blockedIPs.includes(clientIp);
       return res.status(200).json({ blocked: isBlocked, ip: clientIp });
     }
   }
 
-  // ✅ POST (admin only)
+  // ✅ POST
   if (req.method === "POST") {
     if (!verifyAdmin(req)) {
       return res.status(401).json({ error: "Unauthorized" });
@@ -61,24 +59,23 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Missing action or IP" });
     }
 
-    if (action === "add") {
-      if (!global.blockedIPs.includes(ip)) {
-        global.blockedIPs.push(ip);
-      }
+    if (action === "add" && !blockedIPs.includes(ip)) {
+      blockedIPs.push(ip);
     }
     if (action === "remove") {
-      global.blockedIPs = global.blockedIPs.filter((i) => i !== ip);
+      blockedIPs = blockedIPs.filter((i) => i !== ip);
     }
 
-    return res.status(200).json({ blocked: global.blockedIPs });
+    await kv.set("blockedIPs", blockedIPs);
+
+    return res.status(200).json({ blocked: blockedIPs });
   }
 
   return res.status(405).json({ error: "Method not allowed" });
 }
 
-// Helper
 async function streamToString(req) {
   const chunks = [];
   for await (const c of req) chunks.push(c);
   return Buffer.concat(chunks).toString();
-      }
+  }
